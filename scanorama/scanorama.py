@@ -5,7 +5,7 @@ import numpy as np
 import operator
 import random
 import scipy
-from scipy.sparse import csc_matrix, csr_matrix, vstack
+from scipy.sparse import csc_matrix, csr_matrix, vstack, issparse
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import rbf_kernel, euclidean_distances
 from sklearn.neighbors import NearestNeighbors
@@ -930,6 +930,15 @@ def assemble(datasets, verbose=VERBOSE, view_match=False, knn=KNN,
             ref_ind = [ b for _, b in match ]
 
             # Apply transformation to entire panorama.
+            if isinstance(curr_ds, np.matrix):
+                print("`curr_ds` is np.matrix. Converting to np.array.", flush=True)
+                curr_ds = np.array(curr_ds)
+            elif issparse(curr_ds):
+                print("`curr_ds` is sparse. Converting to np.array.", flush=True)
+                curr_ds = curr_ds.toarray()
+            else:
+                print("`curr_ds` is neither matrix nor sparse. Not converted.", flush=True)
+
             bias = transform(curr_ds, curr_ref, ds_ind, ref_ind, sigma=sigma,
                              batch_size=batch_size)
             curr_ds += bias
